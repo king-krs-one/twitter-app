@@ -2,9 +2,23 @@
 
 {% block content %}
 
+
+<div class="flex flex-row flex-1">
+  <div class="lg:basis-4/5 basis-full mx-auto">
+    <form class="form" method="post" action="/tweets/create">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="/" />
+      <!-- <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Tweet</label> -->
+      <textarea id="message" name="content" placeholder="Your Tweet" rows="4" class="mb-2 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+      <button type="submit" class="w-36 px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Send</button>
+    </form>
+  </div>
+</div>
+
 <div id="tweets" class="w-full grid md:grid-cols-3 gap-4">
   replace me
 </div>
+
 <script>
 const tweetsElement = document.getElementById("tweets")
 
@@ -43,7 +57,7 @@ tweetsElement.innerHTML = "loading...."
     const listedItems = xhr.response.response
 
     const listedItemsStr = listedItems.map(element => {
-      return formatTweetElement(element) + formatTweetElement(element)
+      return formatTweetElement(element)
     }).join("")
     
     tweetsElement.innerHTML = listedItemsStr
