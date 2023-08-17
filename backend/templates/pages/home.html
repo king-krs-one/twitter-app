@@ -6,6 +6,11 @@
 <div class="flex flex-row flex-1">
   <div class="lg:basis-4/5 basis-full mx-auto">
     <form class="form" id="tweet-create-form" method="post" action="/tweets/create">
+      <div id="tweet-create-form-error"
+        class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"
+        role="alert">
+        <span class="font-medium">Danger alert!</span>
+      </div>
       {% csrf_token %}
       <input type="hidden" name="next" value="/" />
       <!-- <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Tweet</label> -->
@@ -27,6 +32,17 @@
 
   tweetsContainerEl.innerHTML = "loading...."
 
+  function handleTweetFormError(msg, display) {
+    const alertElement =  document.getElementById("tweet-create-form-error")
+    if (display === true) {
+      alertElement.classList.remove("hidden")
+      alertElement.innerText = msg
+    } else { 
+      alertElement.classList.add("hidden")
+      alertElement.innerText = ""
+    }
+  }
+
   tweetCreateFormEl.addEventListener("submit", (event) => {
     event.preventDefault()
     const myForm = event.target
@@ -43,6 +59,7 @@
     xhr.onload = () => {
       console.log(xhr.response)
       if (xhr.status === 201) {
+        handleTweetFormError("", false)
         const newTweet = xhr.response
         // const newTweetJson = JSON.parse(newTweet)
         const newTweetElement = formatTweetElement(newTweet)
@@ -53,6 +70,14 @@
         console.log(newTweetElement)
       } else if (xhr.status === 400) {
         const errorJson = xhr.response
+        const contentError = errorJson.content
+        let contentErrorMsg
+        if (contentError) {
+          contentErrorMsg = contentError[0]
+          handleTweetFormError(contentErrorMsg, true)
+        } else {
+          alert("An error occured, please try again...")
+        }
         console.log(errorJson)
       } else if (xhr.status === 500) {
         alert("There was a server side error, please try again...")
