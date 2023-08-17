@@ -5,12 +5,14 @@
 
 <div class="flex flex-row flex-1">
   <div class="lg:basis-4/5 basis-full mx-auto">
-    <form class="form" method="post" action="/tweets/create">
+    <form class="form" id="tweet-create-form" method="post" action="/tweets/create">
       {% csrf_token %}
       <input type="hidden" name="next" value="/" />
       <!-- <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Tweet</label> -->
-      <textarea id="message" name="content" placeholder="Your Tweet" rows="4" class="mb-2 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
-      <button type="submit" class="w-36 px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Send</button>
+      <textarea id="message" name="content" placeholder="Your Tweet" rows="4"
+        class="mb-2 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+      <button type="submit"
+        class="w-36 px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Send</button>
     </form>
   </div>
 </div>
@@ -20,48 +22,77 @@
 </div>
 
 <script>
-const tweetsElement = document.getElementById("tweets")
+  const tweetsEl = document.getElementById("tweets")
+  const tweetCreateFormEl = document.getElementById("tweet-create-form")
 
-function handleDidLike(tweet_id, likes){
-  console.log(tweet_id, likes)
-  return
-}
+  tweetsEl.innerHTML = "loading...."
 
-function likeBtn (tweet) {
-  const btnClass = "px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white"
-  return `<button type="button" onclick=${handleDidLike(tweet.id, tweet.likes)} class="${btnClass}">
+  tweetCreateFormEl.addEventListener("submit", (event) => {
+    event.preventDefault()
+    const myForm = event.target
+    const myFormData = new FormData(myForm)
+    const url = myForm.getAttribute("action")
+    const method = myForm.getAttribute("method")
+
+    const xhr = new XMLHttpRequest()
+    xhr.open(method, url)
+    xhr.setRequestHeader("HTTP_X_REQUESTED_WITH", "XMLHttpRequest")
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+    xhr.onload = () => {
+      console.log(xhr.response)
+      loadTweets(tweetsEl)
+    }
+    xhr.send(myFormData)
+
+    // for (let item of myFormData){
+    //   console.log(item)
+    // }
+  })
+
+  function loadTweets(tweetsElement) {
+    const xhr = new XMLHttpRequest()
+    const method = "GET"
+    const url = "/tweets"
+    const responseType = "json"
+
+    xhr.responseType = responseType
+    xhr.open(method, url)
+    xhr.onload = () => {
+      console.log(xhr.response)
+      const listedItems = xhr.response.response
+
+      const listedItemsStr = listedItems.map(element => {
+        return formatTweetElement(element)
+      }).join("")
+
+      tweetsElement.innerHTML = listedItemsStr
+    }
+    xhr.send()
+  }
+
+  loadTweets(tweetsEl)
+
+  function handleDidLike(tweet_id, likes) {
+    console.log(tweet_id, likes)
+    return
+  }
+
+  function likeBtn(tweet) {
+    const btnClass = "px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white"
+    return `<button type="button" onclick="${() => handleDidLike(tweet.id, tweet.likes)}" class="${btnClass}">
     Like - ${tweet.likes}
   </button>`
-}
+  }
 
-function formatTweetElement(tweet){
-  return `<div id="tweet-${tweet.id}" class="col md:col-span-1 border p-4 mb-4">
+  function formatTweetElement(tweet) {
+    return `<div id="tweet-${tweet.id}" class="col md:col-span-1 border p-4 mb-4">
             <p>${tweet.content}</p>
             <div class="inline-flex rounded-md shadow-sm" role="group">
               ${likeBtn(tweet)}
             </div>
           </div>`
-}
-
-tweetsElement.innerHTML = "loading...." 
-
-  const xhr = new XMLHttpRequest()
-  const method = "GET"
-  const url = "/tweets"
-  const responseType = "json"
-
-  xhr.responseType = responseType
-  xhr.open(method, url)
-  xhr.onload = () => {
-    console.log(xhr.response)
-    const listedItems = xhr.response.response
-
-    const listedItemsStr = listedItems.map(element => {
-      return formatTweetElement(element)
-    }).join("")
-    
-    tweetsElement.innerHTML = listedItemsStr
   }
-  xhr.send()
+
+
 </script>
 {% endblock content %}
