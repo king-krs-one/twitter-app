@@ -5,6 +5,7 @@ from django.conf import settings
 from .models import Tweet
 from .forms import TweetForm
 import random
+from pprint import pprint
 
 def is_ajax(request):
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
@@ -14,19 +15,23 @@ def home_view(request, *args, **kwargs):
     return render(request, "pages/home.html", context={}, status=200)
 
 def tweet_create_view(request, *args, **kwargs):
-    print("ajax", is_ajax(request=request))
+    print("ajax", is_ajax(request))
     form = TweetForm(request.POST or None)
     next_url = request.POST.get("next") or None
     if form.is_valid():
         obj = form.save(commit=False)
         obj.save()
 
-        if is_ajax(request=request):
+        if is_ajax(request):
             return JsonResponse(obj.serialize(), status=201) # 201 = succesfully created items
 
         if next_url != None and url_has_allowed_host_and_scheme(next_url, settings.ALLOWED_HOSTS):
             return redirect(next_url)
         form = TweetForm()
+    
+    if form.errors:
+        if is_ajax(request):
+            return JsonResponse(form.errors, status=400)
 
     return render(request, "components/form.html", context={"form": form})
 

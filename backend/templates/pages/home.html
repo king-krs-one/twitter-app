@@ -9,7 +9,7 @@
       {% csrf_token %}
       <input type="hidden" name="next" value="/" />
       <!-- <label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your Tweet</label> -->
-      <textarea id="message" name="content" placeholder="Your Tweet" rows="4"
+      <textarea required="required" id="message" name="content" placeholder="Your Tweet" rows="4"
         class="mb-2 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
       <button type="submit"
         class="w-36 px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Send</button>
@@ -42,16 +42,26 @@
     xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
     xhr.onload = () => {
       console.log(xhr.response)
-      if (xhr.status === 201){
+      if (xhr.status === 201) {
         const newTweet = xhr.response
         // const newTweetJson = JSON.parse(newTweet)
         const newTweetElement = formatTweetElement(newTweet)
         const ogHtml = tweetsContainerEl.innerHTML
         tweetsContainerEl.innerHTML = newTweetElement + ogHtml
+        myForm.reset()
 
         console.log(newTweetElement)
+      } else if (xhr.status === 400) {
+        const errorJson = xhr.response
+        console.log(errorJson)
+      } else if (xhr.status === 500) {
+        alert("There was a server side error, please try again...")
       }
       // loadTweets(tweetsContainerEl)
+    }
+
+    xhr.onerror = () => {
+      alert("An error occured, please try again later...")
     }
     xhr.send(myFormData)
 
