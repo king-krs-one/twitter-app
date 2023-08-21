@@ -26,7 +26,8 @@ from tweets.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('djoser.urls')),
-    path('api/', include('djoser.urls.jwt')),
+    path('api/', include('users.urls')),
+    # path('api/', include('djoser.urls.jwt')),
     path('api-auth/', include('rest_framework.urls')),
     
     path('', home_view),
